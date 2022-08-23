@@ -1,6 +1,9 @@
 # A Stock Exchange game with a twist (twist coming soon-ish)
 # Roadmap:
 ## ⏳[ ] Spread out functions to classes and function collections
+## [X] Improve text currency formating
+## [ ] Currency choice
+## [ ] Language selection (English & German at first)
 ## [ ] Add Loan system with debt and dayly interest
 ## [ ] Add more realistic stock movement
 ## [ ] Add history of stock
@@ -11,125 +14,79 @@
 
 import random
 import ascii_art
+from features import shareTrade
+from features import loanShark
 from os import system, name
 
-def clear():
-  if name == 'nt':
-    _= system('cls')
+shark = loanShark.Loanshark(random.randint(5, 50) * 1000, random.randint(0, 4))
 
-  else:
-    _= system('clear')
+def clear():
+    if name == 'nt':
+        _ = system('cls')
+
+    else:
+        _ = system('clear')
+
+def moneyToString(ammount):
+  addedSymbol = f"${ammount:_}"
+  addedSymbol = addedSymbol.replace("_", "'")
+  return addedSymbol
 
 logo = ascii_art.return_logo()
 
-def buysellchoice():
-  # TODO: add check if number
-  choice = input("")
-  return int(choice)
-  # chosen = False
-  # while chosen == False:
-    # choice = 0
-
-
-def loan():
-  # TODO: add loan system
-  print("Take out a loan or repay?: Take out(1)?          Repay(2)?")
-  print("pog")
-
-# Function to buy shares
-def buy(balance, price, shares):
-  print("The max amount of shares you can buy is:", balance//price)
-  print("If you want to buy max shares type: '12345'")
-  print("How many shares would you like to buy?: ", end=" ")
-  choice = buysellchoice()
-
-  # short input to buy max amount of shares
-  if choice == 12345:
-    shares = shares + (balance//price)
-    balance = balance - ((balance//price) * price)
-
-  else:
-    if balance - (price * choice) < 0:
-      print("You don't have enough money for that transaction!")
-
-    else:
-      balance = balance - (price * choice)
-      shares = shares + choice
-
-  return balance, shares
-
-# Function to sell shares
-def sell(balance, price, shares):
-  print("The max amount of shares you can sell is:", shares)
-  print("If you want to sell max shares type: '12345'")
-  print("How many shares would you like to sell?: ", end=" ")
-  choice = buysellchoice()
-
-  # short input to sell max amount of shares
-  if choice == 12345:
-    balance = balance + (shares * price)
-    shares = 0
-
-  else:
-    if choice > shares:
-      print("You don't have enough shares for that transaction!")
-    
-    else:
-      balance = balance + (price * choice)
-      shares = shares - choice
-  
-  return balance, shares
-
 # Function to skip to the next day
 def skip(days):
-  days = days - 1
-  return days
+    days = days - 1
+    return days
+
 
 # Function that runs at the end of the game showing statistics
-def endgame(balance, shares, days):
-  print("\n\n\nYou finished with:")
-  print("Balance:", balance.replace("_", "'"))
-  print("Shares:", shares)
-  print("Which you earned withing:", days, "days!")
-  print("\nGAME OVER")
+def endgame(balance, shares, days, loan):
+    print("\n\n\nYou finished with:")
+    print("Balance:", moneyToString(balance))
+    print("Shares:", shares)
+    print("Loan debt left:", moneyToString(loan))
+    print("Which you earned withing:", days, "days!")
+    print("\nGAME OVER")
 
 # Function to show every day with all options. Basically the main game function
 def rounds(days, balance, shares):
-  totalDays = days
-  for i in range(days):
-    nextDay = False
-    price = random.randint(1, 1000)
-    while nextDay == False:
-      clear()
-      print(logo)
-      balanceString = f"${balance:_}"
-      print("Days left:", days, "          Balance:", balanceString.replace("_", "'"), "          Shares:", shares)
-      print("Todays Stock price:", f"${price}")
-      print("What do you want to do?: Buy(1)?          Sell(2)?          Next day(3)?")
-      choice = input("Your Choice?: ")
+    totalDays = days
+    for i in range(days):
+        nextDay = False
+        price = random.randint(1, 1000)
+        while nextDay == False:
+            clear()
+            print(logo)
+            print("Days left:", days, "          Balance:",
+                  moneyToString(balance), "          Shares:", shares)
+            print("Todays Stock price:", f"${price}")
+            print("Your loan:", moneyToString(shark.loan))
+            print("\nWhat do you want to do?: \nBuy(1)?          Sell(2)?        Loanshark(3)?          Next day(3)?\n"
+            )
+            choice = input("Your Choice?: ")
 
-      if choice == "1":
-        balance, shares = buy(balance, price, shares)
-      elif choice == "2":
-        balance, shares = sell(balance, price, shares)
-      elif choice == "3":
-        nextDay = True
-      else:
-        input("Wrong Choice Error")
-    
-    days = skip(days)
-  balanceString = f"${balance:_}"
-  endgame(balanceString, shares, totalDays)
+            if choice == "1":
+                balance, shares = shareTrade.buy(balance, price, shares)
+            elif choice == "2":
+                balance, shares = shareTrade.sell(balance, price, shares)
+            elif choice == "3":
+                balance, loan, interestRate = shark.menu(balance)
+            elif choice == "4":
+                nextDay = True
+            else:
+                input("Wrong Choice Error")
+
+        days = skip(days)
+    endgame(balance, shares, totalDays, loan)
 
 
 # Function to initiate the game
 def main():
-  days = int(input("Choose how many days: "))
-  balance = random.randint(1, 10)*1000
-  shares = 0
-  rounds(days, balance, shares)
-
+    days = int(input("Choose how many days: "))
+    balance = random.randint(1, 10) * 1000
+    shares = 0
+    rounds(days, balance, shares)
 
 
 main()
-

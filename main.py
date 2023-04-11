@@ -2,7 +2,7 @@
 # Roadmap:
 ## ⏳[ ] Spread out functions to classes and function collections
 ## [X] Improve text currency formating
-## [ ] Currency choice
+## [X] Currency choice
 ## [ ] Language selection (English & German at first)
 ## [ ] Add Loan system with debt and dayly interest
 ## [ ] Add more realistic stock movement
@@ -27,10 +27,20 @@ def clear():
     else:
         _ = system('clear')
 
-def moneyToString(ammount):
-  addedSymbol = f"${ammount:_}"
-  addedSymbol = addedSymbol.replace("_", "'")
-  return addedSymbol
+def moneyToString(ammount, currency_symbol):
+    addedSymbol = f"{currency_symbol}{ammount:_}"
+    addedSymbol = addedSymbol.replace("_", "'")
+    return addedSymbol
+
+# Function to prompt user for currency choice
+def chooseCurrency():
+    print("Please choose your currency symbol or code (CHF, $, €, GBP, etc.) (no space included): ")
+    currency_symbol = input()
+    return currency_symbol
+
+# Prompt user for currency choice
+currency_symbol = chooseCurrency()
+
 
 logo = ascii_art.return_logo()
 
@@ -45,9 +55,9 @@ def skip(days, weekDayIndex):
 # Function that runs at the end of the game showing statistics
 def endgame(balance, shares, days, loan):
     print("\n\n\nYou finished with:")
-    print("Balance:", moneyToString(balance))
+    print("Balance:", moneyToString(balance, currency_symbol))
     print("Shares:", shares)
-    print("Loan debt left:", moneyToString(loan))
+    print("Loan debt left:", moneyToString(loan, currency_symbol))
     print("Which you earned withing:", days, "days!")
     print("\nGAME OVER")
 
@@ -64,10 +74,10 @@ def rounds(days, balance, shares, weekDay):
                 shark.setPaidInterestState(False)
             # print(logo)
             print("Days left:", days, "            Today is:", weekDay[0][weekDay[1]%7])
-            print("Balance:", moneyToString(balance), "          Shares:", shares)
-            print("Todays Stock price:", f"${price}")
-            print("Your loan:", moneyToString(shark.loan), "        Interestrate:", f"{shark.interestFavor}%", "        Sharkfavor:", shark.favor)
-            print("Weekly interest:", moneyToString(shark.interestRate), "    This weeks interest paid?:", shark.returnPaidInterest())
+            print("Balance:", moneyToString(balance, currency_symbol), "          Shares:", shares)
+            print("Todays Stock price:", moneyToString(price, currency_symbol))
+            print("Your loan:", moneyToString(shark.loan, currency_symbol), "        Interestrate:", f"{shark.interestFavor}%", "        Sharkfavor:", shark.favor)
+            print("Weekly interest:", moneyToString(shark.interestRate, currency_symbol), "    This weeks interest paid?:", shark.returnPaidInterest())
             print("\nWhat do you want to do?: \nBuy(1)?          Sell(2)?        Loanshark(3)?          Next day(4)?\n")
             choice = input("Your Choice?: ")
 
@@ -82,7 +92,7 @@ def rounds(days, balance, shares, weekDay):
                     if shark.returnPaidInterest():
                         nextDay = True
                     else:
-                        print("Weekly interest of", moneyToString(shark.returnInterestRate()), "not yet paid")
+                        print("Weekly interest of", moneyToString(shark.returnInterestRate(), currency_symbol), "not yet paid")
                         choice = input("Pay interest?(1)        Skip this payment?(2): ")
 
                         if choice == "1":

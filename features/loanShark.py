@@ -35,7 +35,7 @@ class Loanshark:
         if random.randint(1, 20) + self.favor < 10:
             print("Your legs are broken")
         else:
-            print("Legs aren't broken")
+            print("You were able to talk yourself out of the situation")
         
         input("Press enter to continue...")
     

@@ -73,3 +73,4 @@ class Loanshark:
         elif choice == "2":
             return self.payInterest(balance), self.loan, self.interestRate
             
+

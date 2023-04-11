@@ -18,7 +18,7 @@ from features import shareTrade
 from features import loanShark
 from os import system, name
 
-shark = loanShark.Loanshark(random.randint(5, 50) * 1000, random.randint(0, 4))
+shark = loanShark.Loanshark(random.randint(5, 50) * 1000, random.randint(-4, 3))
 
 def clear():
     if name == 'nt':
@@ -35,9 +35,11 @@ def moneyToString(ammount):
 logo = ascii_art.return_logo()
 
 # Function to skip to the next day
-def skip(days):
+def skip(days, weekDayIndex):
     days = days - 1
-    return days
+    weekDayIndex = weekDayIndex + 1
+    
+    return days, weekDayIndex
 
 
 # Function that runs at the end of the game showing statistics
@@ -50,20 +52,23 @@ def endgame(balance, shares, days, loan):
     print("\nGAME OVER")
 
 # Function to show every day with all options. Basically the main game function
-def rounds(days, balance, shares):
+def rounds(days, balance, shares, weekDay):
     totalDays = days
     for i in range(days):
         nextDay = False
         price = random.randint(1, 1000)
+
         while nextDay == False:
             clear()
-            print(logo)
-            print("Days left:", days, "          Balance:",
-                  moneyToString(balance), "          Shares:", shares)
+            if weekDay[1]%7 == 0:
+                shark.setPaidInterestState(False)
+            # print(logo)
+            print("Days left:", days, "            Today is:", weekDay[0][weekDay[1]%7])
+            print("Balance:", moneyToString(balance), "          Shares:", shares)
             print("Todays Stock price:", f"${price}")
-            print("Your loan:", moneyToString(shark.loan))
-            print("\nWhat do you want to do?: \nBuy(1)?          Sell(2)?        Loanshark(3)?          Next day(3)?\n"
-            )
+            print("Your loan:", moneyToString(shark.loan), "        Interestrate:", f"{shark.interestFavor}%", "        Sharkfavor:", shark.favor)
+            print("Weekly interest:", moneyToString(shark.interestRate), "    This weeks interest paid?:", shark.returnPaidInterest())
+            print("\nWhat do you want to do?: \nBuy(1)?          Sell(2)?        Loanshark(3)?          Next day(4)?\n")
             choice = input("Your Choice?: ")
 
             if choice == "1":
@@ -72,12 +77,29 @@ def rounds(days, balance, shares):
                 balance, shares = shareTrade.sell(balance, price, shares)
             elif choice == "3":
                 balance, loan, interestRate = shark.menu(balance)
-            elif choice == "4":
-                nextDay = True
-            else:
-                input("Wrong Choice Error")
+            elif choice == "4": 
+                if weekDay[1]%7 == 6:
+                    if shark.returnPaidInterest():
+                        nextDay = True
+                    else:
+                        print("Weekly interest of", moneyToString(shark.returnInterestRate()), "not yet paid")
+                        choice = input("Pay interest?(1)        Skip this payment?(2): ")
 
-        days = skip(days)
+                        if choice == "1":
+                            balance = shark.payInterest(balance)
+                            if shark.returnPaidInterest() == True:
+                                nextDay = True
+
+                        elif choice == "2":
+                            shark.skipInterestPayment()
+                            nextDay = True
+                            
+                else:
+                    nextDay = True
+            else:
+                input("Wrong Choice Error. Press enter to continue...")
+
+        days, weekDay[1] = skip(days, weekDay[1])
     endgame(balance, shares, totalDays, loan)
 
 
@@ -86,7 +108,9 @@ def main():
     days = int(input("Choose how many days: "))
     balance = random.randint(1, 10) * 1000
     shares = 0
-    rounds(days, balance, shares)
+    weekDay = [["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"], 0]
+    currentWeekDay = 0
+    rounds(days, balance, shares, weekDay)
 
 
 main()
